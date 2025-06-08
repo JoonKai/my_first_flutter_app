@@ -20,7 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
   String password ='';
   @override
   Widget build(BuildContext context) {
-    final storage = FlutterSecureStorage();
     final dio = Dio();
 
     //localhost
