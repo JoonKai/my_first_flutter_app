@@ -16,19 +16,14 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  String username ='';
-  String password ='';
+  String username = '';
+  String password = '';
   @override
   Widget build(BuildContext context) {
     final dio = Dio();
 
-    //localhost
-    final emulatorIp = '10.0.2.2:3000';
-    final simulatorIP = '127.0.0.1:3000';
-    final ip = Platform.isIOS ? simulatorIP : emulatorIp;
-
-    return DefaultLayout(child: 
-      SingleChildScrollView(
+    return DefaultLayout(
+      child: SingleChildScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         child: SafeArea(
           top: true,
@@ -36,89 +31,74 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _Title(),
-                  SizedBox(height: 16.0),
-                  _SubTitle(),
-                  Image.asset(
-                    'asset/img/misc/logo.png',
-                    width: MediaQuery.of(context).size.width /3 * 2,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _Title(),
+                SizedBox(height: 16.0),
+                _SubTitle(),
+                Image.asset(
+                  'asset/img/misc/logo.png',
+                  width: MediaQuery.of(context).size.width / 3 * 2,
+                ),
+                CustomTextFormField(
+                  hintText: '이메일을 입력해주세요',
+                  onChanged: (String value) {
+                    username = value;
+                  },
+                ),
+                SizedBox(height: 16.0),
+                CustomTextFormField(
+                  hintText: '비밀번호를 입력해주세요',
+                  obscureText: true,
+                  onChanged: (String value) {
+                    password = value;
+                  },
+                ),
+                SizedBox(height: 16.0),
+                ElevatedButton(
+                  onPressed: () async {
+                    //ID;비밀번호호
+                    final rawString = '$username:$password';
+                    print(rawString);
+                    Codec<String, String> stringToBase64 = utf8.fuse(base64);
+
+                    String token = stringToBase64.encode(rawString);
+
+                    final resp = await dio.post(
+                      'http://$ip/auth/login',
+                      options: Options(
+                        headers: {'authorization': 'Basic $token'},
+                      ),
+                    );
+
+                    final refreshToken = resp.data['refreshToken'];
+                    final accessToken = resp.data['accessToken'];
+
+                    await storage.write(
+                      key: REFRESH_TOKEN_KEY,
+                      value: refreshToken,
+                    );
+                    await storage.write(
+                      key: ACCESS_TOKEN_KEY,
+                      value: accessToken,
+                    );
+
+                    Navigator.of(
+                      context,
+                    ).push(MaterialPageRoute(builder: (_) => RootTab()));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: PRIMARY_COLOR,
                   ),
-                  CustomTextFormField(
-                    hintText: '이메일을 입력해주세요',
-                    onChanged: (String value){
-                      username = value;
-                    },
-                  ),
-                  SizedBox(height: 16.0),
-                  CustomTextFormField(
-                    hintText: '비밀번호를 입력해주세요',
-                    obscureText: true,
-                    onChanged: (String value){
-                      password = value;
-                    },
-                  ),
-                  SizedBox(height: 16.0),
-                  ElevatedButton(
-                    onPressed: () async{
-                      //ID;비밀번호호
-                      final rawString = '$username:$password';
-                      print(rawString);
-                      Codec<String, String> stringToBase64 = utf8.fuse(base64);
-
-                      String token = stringToBase64.encode(rawString);
-
-
-                      final resp = await dio.post('http://$ip/auth/login', 
-                        options: Options(
-                          headers: {
-                            'authorization':'Basic $token',
-                          }
-                        ),
-                      );
-
-                      final refreshToken = resp.data['refreshToken'];
-                      final accessToken = resp.data['accessToken'];
-
-                      await storage.write(key: REFRESH_TOKEN_KEY, value: refreshToken);
-                      await storage.write(key: ACCESS_TOKEN_KEY, value: accessToken);
-
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => RootTab(),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: PRIMARY_COLOR,
-                    ),
-                    child: Text(
-                      '로그인',
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () async{
-                      final refreshToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3RAY29kZWZhY3RvcnkuYWkiLCJzdWIiOiJmNTViMzJkMi00ZDY4LTRjMWUtYTNjYS1kYTlkN2QwZDkyZTUiLCJ0eXBlIjoicmVmcmVzaCIsImlhdCI6MTc0OTMyNTQ3MCwiZXhwIjoxNzQ5NDExODcwfQ.w9t7UGmwvTPd_Efde4M_dwBjZ63S1lefg_nRLIgSYKg';
-
-                      final resp = await dio.post('http://$ip/auth/token', 
-                        options: Options(
-                          headers: {
-                            'authorization':'Bearer $refreshToken',
-                          }
-                        ),
-                      );
-                      
-                      print(resp.data);
-                    },
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.black,
-                    ), 
-                    child: Text(
-                    '회원가입',
-                  ),),
-                ],
-              ),
+                  child: Text('로그인'),
+                ),
+                TextButton(
+                  onPressed: () async {},
+                  style: TextButton.styleFrom(foregroundColor: Colors.black),
+                  child: Text('회원가입'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -141,6 +121,7 @@ class _Title extends StatelessWidget {
     );
   }
 }
+
 class _SubTitle extends StatelessWidget {
   const _SubTitle();
 
@@ -148,10 +129,7 @@ class _SubTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       '이메일과 비밀번호를 입력해주세요! \n오늘도 성공적인 주문이 되길 : ',
-      style: TextStyle(
-        fontSize: 16,
-        color: BODY_TEXT_COLOR,
-      ),
+      style: TextStyle(fontSize: 16, color: BODY_TEXT_COLOR),
     );
   }
 }
