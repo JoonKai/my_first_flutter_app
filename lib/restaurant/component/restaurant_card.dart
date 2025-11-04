@@ -59,7 +59,7 @@ class RestaurantCard extends StatelessWidget {
             renderDot(),
             _IconText(
               icon: Icons.monetization_on,
-              label: '${deliveryFee == 0 ? '무료' : deliveryFee.toString()}',
+              label: deliveryFee == 0 ? '무료' : deliveryFee.toString(),
             ),
           ],
         ),
@@ -81,7 +81,7 @@ class RestaurantCard extends StatelessWidget {
 class _IconText extends StatelessWidget {
   final IconData icon;
   final String label;
-  const _IconText({required this.icon, required this.label, super.key});
+  const _IconText({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
