@@ -1,4 +1,4 @@
-enum RestaurantPriceRange { expensive, medium, cheep }
+enum RestaurantPriceRange { expensive, medium, cheap }
 
 class RestaurantModel {
   final String id;

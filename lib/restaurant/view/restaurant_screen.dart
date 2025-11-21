@@ -37,6 +37,7 @@ class RestaurantScreen extends StatelessWidget {
                 itemCount: snapshot.data!.length,
                 itemBuilder: (_, index) {
                   final item = snapshot.data![index];
+
                   final pItem = RestaurantModel(
                     id: item['id'],
                     name: item['name'],
