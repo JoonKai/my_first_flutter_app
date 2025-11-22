@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_firstapp/common/const/colors.dart';
+import 'package:my_firstapp/restaurant/model/restaurant_detail_model.dart';
+import 'package:my_firstapp/restaurant/model/restaurant_model.dart';
 
 class RestaurantCard extends StatelessWidget {
   //이미지
@@ -16,6 +18,10 @@ class RestaurantCard extends StatelessWidget {
   final int deliveryFee;
   //배송 평점
   final double ratings;
+  //상세카드여부
+  final bool isDetail;
+  //상세내용
+  final String? detail;
 
   const RestaurantCard({
     required this.image,
@@ -25,23 +31,47 @@ class RestaurantCard extends StatelessWidget {
     required this.deliveryTime,
     required this.deliveryFee,
     required this.ratings,
+    this.isDetail = false,
+    this.detail,
     super.key,
   });
+
+  factory RestaurantCard.fromModel({
+    required RestaurantModel model,
+    bool isDetail = false,
+  }) {
+    return RestaurantCard(
+      image: Image.network(model.thumbUrl, fit: BoxFit.cover),
+      name: model.name,
+      tags: model.tags,
+      ratingsCount: model.ratingsCount,
+      deliveryTime: model.deliveryTime,
+      deliveryFee: model.deliveryFee,
+      ratings: model.ratings,
+      isDetail: isDetail,
+      detail: model is RestaurantDetailModel ? model.detail : null,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ClipRRect(borderRadius: BorderRadius.circular(12.0), child: image),
+        if (isDetail) image,
+        if (!isDetail)
+          ClipRRect(borderRadius: BorderRadius.circular(12.0), child: image),
         SizedBox(height: 16.0),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              name,
-              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w500),
-            ),
-          ],
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: isDetail ? 16.0 : 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                name,
+                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 8.0),
         Text(
@@ -63,6 +93,11 @@ class RestaurantCard extends StatelessWidget {
             ),
           ],
         ),
+        if (detail != null && isDetail)
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: 16.0),
+            child: Text(detail!),
+          ),
       ],
     );
   }

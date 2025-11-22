@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:my_firstapp/common/const/data.dart';
 import 'package:my_firstapp/restaurant/component/restaurant_card.dart';
 import 'package:my_firstapp/restaurant/model/restaurant_model.dart';
+import 'package:my_firstapp/restaurant/view/restaurant_detail_screen.dart';
 
 class RestaurantScreen extends StatelessWidget {
   const RestaurantScreen({super.key});
@@ -16,7 +17,6 @@ class RestaurantScreen extends StatelessWidget {
       'http://$ip/restaurant',
       options: Options(headers: {'authorization': 'Bearer $accessToken'}),
     );
-
     return resp.data['data'];
   }
 
@@ -30,35 +30,22 @@ class RestaurantScreen extends StatelessWidget {
             future: paginateRestaurant(),
             builder: (context, AsyncSnapshot<List> snapshot) {
               if (!snapshot.hasData) {
-                return Container();
+                return Center(child: CircularProgressIndicator());
               }
-
               return ListView.separated(
                 itemCount: snapshot.data!.length,
                 itemBuilder: (_, index) {
                   final item = snapshot.data![index];
-
-                  final pItem = RestaurantModel(
-                    id: item['id'],
-                    name: item['name'],
-                    thumbUrl: 'http://$ip${item['thumbUrl']}',
-                    tags: List<String>.from(item['tags']),
-                    priceRange: RestaurantPriceRange.values.firstWhere(
-                      (e) => e.name == item['priceRange'],
-                    ),
-                    ratings: item['ratings'],
-                    ratingsCount: item['ratingsCount'],
-                    deliveryTime: item['deliveryTime'],
-                    deliveryFee: item['deliveryFee'],
-                  );
-                  return RestaurantCard(
-                    image: Image.network(pItem.thumbUrl, fit: BoxFit.cover),
-                    name: pItem.name,
-                    tags: pItem.tags,
-                    ratingsCount: pItem.ratingsCount,
-                    deliveryTime: pItem.deliveryTime,
-                    deliveryFee: pItem.deliveryFee,
-                    ratings: pItem.ratings,
+                  final pItem = RestaurantModel.fromJson(json: item);
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => RestaurantDetailScreen(id: pItem.id),
+                        ),
+                      );
+                    },
+                    child: RestaurantCard.fromModel(model: pItem),
                   );
                 },
                 separatorBuilder: (_, index) {
